@@ -1,3 +1,3 @@
-SecureCipher - A Cryptocurrency Exchange Application
+# SecureCipher - A Cryptocurrency Exchange Application
 
-This is an example of a Web3 Decentralized Application written with Ethereum and Solidity Smart Contracts.
+This is an example of a Web3 Cryptocurrency Application written with Ethereum and Solidity Smart Contracts.
