@@ -1,9 +1,9 @@
-@import './../../styles/variables';
+@import "./../../styles/variables";
 
 .transferForm {
   max-width: 400px;
   margin: 0 auto 20px;
-  background: hsla(0,0%,100%,.24);
+  background: hsla(0, 0%, 100%, 0.24);
   backdrop-filter: blur(16px);
   border-radius: 5px;
   border: 1px solid $white;
@@ -17,6 +17,7 @@
     padding: 0;
     margin-bottom: 12px;
   }
+  
 
   p {
     display: block;
@@ -27,5 +28,4 @@
     text-align: left;
     margin: 0 0 30px;
   }
-
 }

@@ -62,7 +62,7 @@ const TransactionForm = () => {
           Transfer Ethereum
         </h1>
         <p>
-          Use this to send Eth to another address.
+          Use this to send Ethereum to another address.
         </p>
       </div>
 
