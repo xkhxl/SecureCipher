@@ -1,6 +1,6 @@
 {
-  "short_name": "Eth Wallet",
-  "name": "Eth Wallet - Crypto Transfers",
+  "short_name": "SecureCipher",
+  "name": "SecureCipher - A Cryptocurrency Exchange Application",
   "icons": [
     {
       "src": "favicon.svg",
@@ -9,7 +9,7 @@
       "purpose": "any"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
   "theme_color": "#000000",
   "background_color": "#ffffff"
