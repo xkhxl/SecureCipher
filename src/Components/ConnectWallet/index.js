@@ -22,7 +22,7 @@ const ConnectWallet = () => {
     <div className={styles.connectWallet} data-testid="connectWallet">
       <div className={styles.wrap}>
         <button className={[styles.btn, styles.disconnect].join(' ')} onClick={() => disconnectWallet()}>
-          LogOut
+          Logout
         </button>
         <div className={styles.address}>
           {account}

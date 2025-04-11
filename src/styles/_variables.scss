@@ -6,14 +6,18 @@ $nestedGridMargin: 0 -10px;
 // colors
 $black: #000000;
 $white: #ffffff;
-$orange: #FFAB5E;
+$orange: #ffab5e;
 $darkOrange: #ff983b;
 $red: #bc3030;
 $lightGrey: #f8f8f8;
 $green: #48a868;
 $darkGreen: #3d8f58;
 
+// new (optional) tones
+$darkGrey: #121212;
+$midGrey: #2a2a2a;
+
 @mixin transition {
-  -webkit-transition: all .2s ease-in-out;
-  transition: all .2s ease-in-out;
+  -webkit-transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }

@@ -9,11 +9,10 @@ body,
 body {
   font-family: 'Open Sans', sans-serif;
   font-size: 18px;
-  line-height: 1;
+  line-height: 1.5;
   font-weight: 400;
-  color: $black;
-  background: rgb(161,251,191);
-  background: linear-gradient(90deg, rgba(161,251,191,1) 0%, rgba(250,184,124,1) 100%);
+  color: $white;
+  background: linear-gradient(135deg, #000000 0%, #121212 100%);
   padding: 0;
   margin: 0;
 }
@@ -23,6 +22,7 @@ h2 {
   font-weight: 600;
   padding: 0;
   margin: 0 0 20px;
+  color: $white;
 }
 
 h1 {
@@ -36,9 +36,13 @@ h2 {
 }
 
 a {
-  color: $red;
+  color: $green;
   text-decoration: none;
   cursor: pointer;
+
+  &:hover {
+    color: $darkGreen;
+  }
 }
 
 main {
