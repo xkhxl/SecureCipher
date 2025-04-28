@@ -13,8 +13,7 @@ const TransferHistory = () => {
       if (account) getAllTransfers();
       else setIsFetching(false);
     }
-
-  }, [contracts, validChain, account, getAllTransfers, setIsFetching])
+  }, [contracts, validChain, account, getAllTransfers, setIsFetching]);
 
   const shouldRender = {
     component: Array.isArray(transfers) && transfers.length > 0,
@@ -23,93 +22,83 @@ const TransferHistory = () => {
   const invalidChainMsg = process.env.NODE_ENV === 'development'
     ? commonErrorMessages.switchToDevelopmentChain : commonErrorMessages.switchToProductionChain;
 
+  function shortenAddress(address) {
+    return address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
+  }
+
+  function getTimeAgo(timestamp) {
+    const now = Date.now() / 1000; // seconds
+    const secondsAgo = Math.floor(now - timestamp);
+
+    if (secondsAgo < 60) return `${secondsAgo}s ago`;
+    const minutes = Math.floor(secondsAgo / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+  }
+
   return shouldRender.component ? (
     <div className={styles.transferHistory} data-testid="transferHistory">
+      <h1>Latest Transfers on Ethereum Network</h1>
 
-      <h1>
-        Latest Transfers
-      </h1>
-
-      {transfers.map((transfer, pos) => {
-        const fromAddress = transfer?.fromAddress;
-        const toAddress = transfer?.toAddress;
-        const amount = transfer?.amount;
-        const _amount = ethers.utils.formatEther(amount)
-        const message = transfer?.message;
-        const timestamp = transfer?.timestamp;
-        const _timestamp = timestamp && timestamp.toNumber && timestamp.toNumber();
-        const createdAt = _timestamp && new Date(_timestamp * 1000).toLocaleString();
+      {transfers.slice().reverse().map((transfer, pos) => {
+        const { fromAddress, toAddress, amount, message, timestamp } = transfer;
+        const formattedAmount = ethers.utils.formatEther(amount);
+        const _timestamp = timestamp?.toNumber();
+        const timeAgo = _timestamp ? getTimeAgo(_timestamp) : '';
 
         return (
           <div key={pos} className={styles.transfer}>
-            <div className={styles.details}>
-
-              <div className={styles.detail}>
-                <strong>
-                  From:
-                </strong>
-                {fromAddress}
+            <div className={styles.transferRow}>
+              
+              <div className={styles.addresses}>
+                <a href={`https://etherscan.io/address/${fromAddress}`} target="_blank" rel="noopener noreferrer">
+                  {shortenAddress(fromAddress)}
+                </a>
+                <span>→</span>
+                <a href={`https://etherscan.io/address/${toAddress}`} target="_blank" rel="noopener noreferrer">
+                  {shortenAddress(toAddress)}
+                </a>
               </div>
 
-              <div className={styles.detail}>
-                <strong>
-                  To:
-                </strong>
-                {toAddress}
-              </div>
-
-              <div className={styles.detail}>
-                <i className="fa-brands fa-ethereum"></i>
-                {_amount}
-              </div>
-
-              {message && (
-                <div className={`${styles.detail} ${styles.msg}`}>
-                  <strong>
-                    Message:
-                  </strong>
-                  {message}
-                </div>
-              )}
-
-              <div className={`${styles.detail} ${styles.timestamp}`}>
-                {createdAt}
+              <div className={styles.amount}>
+                {Number(formattedAmount).toFixed(4)} ETH
               </div>
 
             </div>
+
+            <div className={styles.meta}>
+              <span>{timeAgo}</span>
+              {message && <p className={styles.message}>Message: {message}</p>}
+            </div>
+
           </div>
-        )
+        );
       })}
     </div>
   ) : (isLoadingWeb3 || isFetching) ? null : ethereum ? validChain ? account ? (
     <div className={styles.wrongNetwork} data-testid="transferHistory">
       <i className="fa-solid fa-money-bill-transfer"></i>
-      <p>
-        No transfers yet!
-      </p>
+      <p>No transfers yet!</p>
     </div>
   ) : (
     <div className={styles.wrongNetwork} data-testid="transferHistory">
-      <i class="fa-solid fa-wallet"></i>
-      <p>
-        Please connect your wallet
-      </p>
+      <i className="fa-solid fa-wallet"></i>
+      <p>Please connect your wallet</p>
     </div>
   ) : (
     <div className={styles.wrongNetwork} data-testid="transferHistory">
       <i className="fa-solid fa-hand"></i>
-      <p>
-        {invalidChainMsg}
-      </p>
+      <p>{invalidChainMsg}</p>
     </div>
   ) : (
     <div className={styles.wrongNetwork} data-testid="transferHistory">
       <i className="fa-solid fa-triangle-exclamation"></i>
-      <p>
-        Please install MetaMask
-      </p>
+      <p>Please install MetaMask</p>
     </div>
-  )
+  );
 };
 
 export default TransferHistory;

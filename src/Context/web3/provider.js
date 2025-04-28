@@ -81,6 +81,22 @@ const Web3Provider = props => {
     }
   }
 
+  const refreshBalance = async () => {
+    if (account && provider) {
+      try {
+        const balance = await provider.getBalance(account);
+        const _balance = ethers.utils.formatEther(balance);
+
+        dispatch({
+          type: types.SET_BALANCE,
+          payload: _balance
+        });
+      } catch (err) {
+        console.log("Error refreshing balance:", err);
+      }
+    }
+  };
+
   useEffect(() => {
     initWeb3();
 
@@ -145,6 +161,7 @@ const Web3Provider = props => {
       disconnectWallet,
       getAllTransfers,
       setIsFetching,
+      refreshBalance, // 🔥 Added here
     }}>
       {props.children}
     </Web3Context.Provider>
