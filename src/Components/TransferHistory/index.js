@@ -41,7 +41,7 @@ const TransferHistory = () => {
 
   return shouldRender.component ? (
     <div className={styles.transferHistory} data-testid="transferHistory">
-      <h1>Latest Transfers on Ethereum Network</h1>
+      <h1>Latest Transfers</h1>
 
       {transfers.slice().reverse().map((transfer, pos) => {
         const { fromAddress, toAddress, amount, message, timestamp } = transfer;

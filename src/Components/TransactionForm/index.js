@@ -9,8 +9,17 @@ import { ethers } from 'ethers';
 import commonErrorMessages from './../../Utils/commonErrorMessages.json';
 
 const TransactionForm = () => {
-  const { account, isLoadingWeb3, contracts,
-    connectToWallet, ethereum, validChain, getAllTransfers } = useContext(Web3Context);
+  const {
+    account,
+    isLoadingWeb3,
+    contracts,
+    connectToWallet,
+    ethereum,
+    validChain,
+    getAllTransfers,
+    refreshBalance
+  } = useContext(Web3Context);
+
   const walletContract = contracts?.walletContract;
 
   const INITIAL_FORM_STATE = {
@@ -20,89 +29,68 @@ const TransactionForm = () => {
   };
 
   const FORM_VALIDATION = Yup.object().shape({
-    receiver: Yup.string()
-      .required('Required'),
+    receiver: Yup.string().required('Required'),
     message: Yup.string(),
-    amount: Yup.number()
-      .required('Required'),
+    amount: Yup.number().required('Required'),
   });
 
-  const transferFunds = async ({
-    receiver,
-    message,
-    amount
-  }) => {
+  const transferFunds = async ({ receiver, message, amount }) => {
+    try {
+      const _amount = ethers.utils.parseEther(amount.toString());
 
-    const _amount = ethers.utils.parseEther(amount.toString());
+      await ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: account,
+          to: receiver,
+          gas: '0x5208', // 21000 GWEI
+          value: _amount._hex
+        }]
+      });
 
-    await ethereum.request({
-      method: 'eth_sendTransaction',
-      params: [{
-        from: account,
-        to: receiver,
-        gas: '0x5208', // HEX OF 21000 GWEI
-        value: _amount._hex
-      }]
-    });
+      const tx = await walletContract.createTransfer(receiver, _amount, message);
+      await tx.wait(); // Wait for mining
 
-    const hash = await walletContract.createTransfer(receiver, _amount, message);
-    await hash.wait();
-    getAllTransfers();
-
+      // 🔁 Refresh balance and fetch updated transfers
+      await refreshBalance();
+      await getAllTransfers();
+    } catch (err) {
+      console.error("Transaction failed:", err);
+    }
   };
 
   const invalidChainMsg = process.env.NODE_ENV === 'development'
-    ? commonErrorMessages.switchToDevelopmentChain : commonErrorMessages.switchToProductionChain;
+    ? commonErrorMessages.switchToDevelopmentChain
+    : commonErrorMessages.switchToProductionChain;
 
   return (
     <div className={styles.transferForm} data-testid="transactionForm">
 
       <div>
-        <h1>
-          Transfer Ethereum
-        </h1>
-        <p>
-          Use this to send Ethereum to another address.
-        </p>
+        <h1>Transfer Ethereum</h1>
+        <p>Use this to send Ethereum to another address.</p>
       </div>
 
       <Formik
-        initialValues={{
-          ...INITIAL_FORM_STATE
-        }}
+        initialValues={INITIAL_FORM_STATE}
         validationSchema={FORM_VALIDATION}
-        onSubmit={values => {
-          transferFunds(values)
-        }}
+        onSubmit={transferFunds}
       >
         <Form>
-
           <TextField name="from" label="From" value={account} disabled />
-
-          <TextField name="receiver" label="Receiver" placeholder="0xxxxxxxxxxxxxxxxxxxxxxxxxxx" />
-
+          <TextField name="receiver" label="Receiver" placeholder="0x..." />
           <TextField name="message" label="Message (Optional)" />
-
           <TextField name="amount" label="Amount (Eth)" />
 
           {isLoadingWeb3 ? null : ethereum ? validChain ? account ? (
-            <SubmitBtn type="submit">
-              Send
-            </SubmitBtn>
+            <SubmitBtn type="submit">Send</SubmitBtn>
           ) : (
-            <SubmitBtn type="button" onClick={() => connectToWallet()}>
-              Connect Wallet
-            </SubmitBtn>
+            <SubmitBtn type="button" onClick={connectToWallet}>Connect Wallet</SubmitBtn>
           ) : (
-            <div>
-              {invalidChainMsg}
-            </div>
+            <div>{invalidChainMsg}</div>
           ) : (
-            <div>
-              Please install MetaMask
-            </div>
+            <div>Please install MetaMask</div>
           )}
-
         </Form>
       </Formik>
     </div>
