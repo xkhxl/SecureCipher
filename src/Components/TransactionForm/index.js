@@ -31,46 +31,52 @@ const TransactionForm = () => {
   const FORM_VALIDATION = Yup.object().shape({
     receiver: Yup.string().required('Required'),
     message: Yup.string(),
-    amount: Yup.number().required('Required'),
+    amount: Yup.number()
+      .required('Required')
+      .moreThan(0, 'Amount must be greater than 0')
+      .test('decimals', 'Max 5 decimal places', value => {
+        if (!value) return true;
+        return /^\d+(\.\d{1,5})?$/.test(value.toString());
+      }),
   });
 
   const transferFunds = async ({ receiver, message, amount }) => {
-  try {
-    const _amount = ethers.utils.parseEther(amount.toString());
+    try {
+      const _amount = ethers.utils.parseEther(amount.toString());
 
-    // Step 1: Send ETH using MetaMask
-    const ethTx = await ethereum.request({
-      method: 'eth_sendTransaction',
-      params: [{
-        from: account,
-        to: receiver,
-        gas: '0x5208', // 21000 GWEI
-        value: _amount._hex
-      }]
-    });
-
-    // Step 2: Wait for ETH transaction to be mined
-    let receipt = null;
-    while (!receipt) {
-      receipt = await ethereum.request({
-        method: 'eth_getTransactionReceipt',
-        params: [ethTx],
+      // Step 1: Send ETH using MetaMask
+      const ethTx = await ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: account,
+          to: receiver,
+          gas: '0x5208',
+          value: _amount._hex
+        }]
       });
-      await new Promise(res => setTimeout(res, 1000)); // Wait 1 sec
+
+      // Step 2: Wait for ETH transaction to be mined
+      let receipt = null;
+      while (!receipt) {
+        receipt = await ethereum.request({
+          method: 'eth_getTransactionReceipt',
+          params: [ethTx],
+        });
+        await new Promise(res => setTimeout(res, 1000));
+      }
+
+      // Step 3: Call smart contract
+      const tx = await walletContract.createTransfer(receiver, _amount, message);
+      await tx.wait();
+
+      // Step 4: Refresh balance and history
+      await refreshBalance();
+      await getAllTransfers();
+
+    } catch (err) {
+      console.error("Transaction failed:", err);
     }
-
-    // Step 3: Call smart contract
-    const tx = await walletContract.createTransfer(receiver, _amount, message);
-    await tx.wait();
-
-    // Step 4: Refresh balance and history
-    await refreshBalance();
-    await getAllTransfers();
-
-  } catch (err) {
-    console.error("Transaction failed:", err);
-  }
-};
+  };
 
   const invalidChainMsg = process.env.NODE_ENV === 'development'
     ? commonErrorMessages.switchToDevelopmentChain
