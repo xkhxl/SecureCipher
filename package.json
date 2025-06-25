@@ -4,8 +4,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@testing-library/jest-dom": "^5.14.1",
-    "@testing-library/react": "^13.0.0",
     "@testing-library/user-event": "^13.2.1",
     "@trufflesuite/uws-js-unofficial": "^20.30.0-unofficial.0",
     "dotenv": "^16.4.7",
@@ -29,7 +27,6 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
   },
-  
   "eslintConfig": {
     "extends": [
       "react-app",
@@ -49,11 +46,13 @@
     ]
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
     "@truffle/hdwallet-provider": "^2.1.15",
     "gh-pages": "^6.3.0",
     "sass": "^1.85.1",
-    "sass-loader": "^16.0.5"
+    "sass-loader": "^16.0.5",
+    "vitest": "^3.2.2"
   },
   "homepage": "."
-
 }

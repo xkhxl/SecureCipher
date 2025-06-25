@@ -51,7 +51,6 @@ const Web3Provider = props => {
     try {
       const accounts = await provider.send("eth_requestAccounts", []);
       setAccount(accounts);
-
     } catch (err) {
       console.log(err);
     }
@@ -75,7 +74,6 @@ const Web3Provider = props => {
         type: types.SET_TRANSFERS,
         payload: _transfers
       });
-
     } catch (err) {
       console.log(err);
     }
@@ -86,7 +84,6 @@ const Web3Provider = props => {
       try {
         const balance = await provider.getBalance(account);
         const _balance = ethers.utils.formatEther(balance);
-
         dispatch({
           type: types.SET_BALANCE,
           payload: _balance
@@ -99,13 +96,11 @@ const Web3Provider = props => {
 
   useEffect(() => {
     initWeb3();
-
   }, []);
 
   useEffect(() => {
     const getChainId = async () => {
       const { chainId } = await provider.getNetwork();
-
       dispatch({
         type: types.SET_CHAIN_ID,
         payload: chainId
@@ -113,7 +108,6 @@ const Web3Provider = props => {
     };
 
     if (provider) getChainId();
-
   }, [provider]);
 
   useEffect(() => {
@@ -144,6 +138,30 @@ const Web3Provider = props => {
     if (account) getBalance(account);
   }, [account, provider]);
 
+  // ✅ New block listener for real-time balance update
+  useEffect(() => {
+    if (provider && account) {
+      const pollBalance = async () => {
+        try {
+          const balance = await provider.getBalance(account);
+          const _balance = ethers.utils.formatEther(balance);
+          dispatch({
+            type: types.SET_BALANCE,
+            payload: _balance
+          });
+        } catch (err) {
+          console.error("Error polling balance on new block:", err);
+        }
+      };
+
+      provider.on("block", pollBalance);
+
+      return () => {
+        provider.off("block", pollBalance);
+      };
+    }
+  }, [provider, account]);
+
   return (
     <Web3Context.Provider value={{
       ethereum,
@@ -161,11 +179,11 @@ const Web3Provider = props => {
       disconnectWallet,
       getAllTransfers,
       setIsFetching,
-      refreshBalance, // 🔥 Added here
+      refreshBalance,
     }}>
       {props.children}
     </Web3Context.Provider>
-  )
-}
+  );
+};
 
 export default Web3Provider;
