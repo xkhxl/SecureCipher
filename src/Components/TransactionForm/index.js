@@ -41,42 +41,34 @@ const TransactionForm = () => {
   });
 
   const transferFunds = async ({ receiver, message, amount }) => {
-    try {
-      const _amount = ethers.utils.parseEther(amount.toString());
+  try {
+    const _amount = ethers.utils.parseEther(amount.toString());
 
-      // Step 1: Send ETH using MetaMask
-      const ethTx = await ethereum.request({
-        method: 'eth_sendTransaction',
-        params: [{
-          from: account,
-          to: receiver,
-          gas: '0x5208',
-          value: _amount._hex
-        }]
-      });
+    // 1. Create the smart contract transfer first
+    const tx = await walletContract.createTransfer(receiver, _amount, message);
+    await tx.wait(); // ✅ Wait until confirmed
 
-      // Step 2: Wait for ETH transaction to be mined
-      let receipt = null;
-      while (!receipt) {
-        receipt = await ethereum.request({
-          method: 'eth_getTransactionReceipt',
-          params: [ethTx],
-        });
-        await new Promise(res => setTimeout(res, 1000));
-      }
+    // 2. Send ETH manually through MetaMask
+    await ethereum.request({
+      method: 'eth_sendTransaction',
+      params: [{
+        from: account,
+        to: receiver,
+        gas: '0x5208',
+        value: _amount._hex
+      }]
+    });
 
-      // Step 3: Call smart contract
-      const tx = await walletContract.createTransfer(receiver, _amount, message);
-      await tx.wait();
+    // 3. Refresh balance + transfers
+    await refreshBalance();
+    await getAllTransfers();
 
-      // Step 4: Refresh balance and history
-      await refreshBalance();
-      await getAllTransfers();
+  } catch (err) {
+    console.error("Transaction failed:", err);
+    alert("Transaction failed. Check console for details.");
+  }
+};
 
-    } catch (err) {
-      console.error("Transaction failed:", err);
-    }
-  };
 
   const invalidChainMsg = process.env.NODE_ENV === 'development'
     ? commonErrorMessages.switchToDevelopmentChain
